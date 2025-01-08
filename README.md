@@ -1,1 +1,3 @@
-# ReneSANCe-bash-scripts
+# ReneSANCe bash scripts
+
+A collection of scripts and generator configuration files for submitting batch jobs via slurm
