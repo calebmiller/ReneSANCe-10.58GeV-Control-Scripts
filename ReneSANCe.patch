@@ -1,0 +1,128 @@
+diff -crb ReneSANCe-1.3.4_org/Generator/include/Info.h ReneSANCe-1.3.4/Generator/include/Info.h
+*** ReneSANCe-1.3.4_org/Generator/include/Info.h	2023-03-29 03:10:59.000000000 -0700
+--- ReneSANCe-1.3.4/Generator/include/Info.h	2023-12-18 13:33:59.000000000 -0800
+***************
+*** 102,109 ****
+      const double Vcb;
+      const double Vub;
+      //--------------------------------------------------------------------------------------------------
+!     const double CutMinCth;
+!     const double CutMaxCth;
+      const double CutMinTheta;
+      const double CutMaxTheta;
+      // double CutMinM34;
+--- 102,113 ----
+      const double Vcb;
+      const double Vub;
+      //--------------------------------------------------------------------------------------------------
+!     const double CutMinCthPos;
+!     const double CutMaxCthPos;
+!     const double CutMinCthNeg;
+!     const double CutMaxCthNeg;
+!     const double CutMinThNeg;
+!     const double CutMaxThNeg;
+      const double CutMinTheta;
+      const double CutMaxTheta;
+      // double CutMinM34;
+diff -crb ReneSANCe-1.3.4_org/Generator/schema/renesance.schema ReneSANCe-1.3.4/Generator/schema/renesance.schema
+*** ReneSANCe-1.3.4_org/Generator/schema/renesance.schema	2023-03-29 03:10:59.000000000 -0700
+--- ReneSANCe-1.3.4/Generator/schema/renesance.schema	2023-12-18 13:30:39.000000000 -0800
+***************
+*** 24,29 ****
+--- 24,35 ----
+   # 2 - alpha(M_Z)
+  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # Cuts:
++ costhcut_pos_min : {type: number, minimum: -1., maximum: 1., default: -1.} # cut on |cos(theta)|
++ costhcut_pos_max : {type: number, minimum: -1., maximum: 1., default: 1.} # cut on |cos(theta)|
++ costhcut_neg_min : {type: number, minimum: -1., maximum: 1., default: -1.} # cut on |cos(theta)|
++ costhcut_neg_max : {type: number, minimum: -1., maximum: 1., default: 1.} # cut on |cos(theta)|
++ thcut_neg_min : {type: number, minimum: 0., maximum: 180., default: 0.} # cut on |cos(theta)|
++ thcut_neg_max : {type: number, minimum: 0., maximum: 180., default: 180.} # cut on |cos(theta)|
+  costhcut : {type: number, minimum: 0., maximum: 1., default: 1.} # cut on |cos(theta)|
+  thetacut : {type: number, minimum: 0., maximum: 90., default: 0.} # cut on theta in degrees (thetacut < theta < 180-thetacut)
+  e5max    : {type: number, minimum: 0., maximum: inf, default: inf}
+diff -crb ReneSANCe-1.3.4_org/Generator/src/Info.cpp ReneSANCe-1.3.4/Generator/src/Info.cpp
+*** ReneSANCe-1.3.4_org/Generator/src/Info.cpp	2023-12-21 00:15:41.000000000 -0800
+--- ReneSANCe-1.3.4/Generator/src/Info.cpp	2023-12-18 13:23:31.000000000 -0800
+***************
+*** 67,74 ****
+      Vcs(_cfg.get_d("vcs")),
+      Vcb(_cfg.get_d("vcb")),
+      Vub(_cfg.get_d("vub")),
+!     CutMinCth(-_cfg.get_d("costhcut")),
+!     CutMaxCth(_cfg.get_d("costhcut")),
+      CutMinTheta(_cfg.get_d("thetacut")),
+      CutMaxTheta(180.-_cfg.get_d("thetacut")),
+      // CutMinM34(0.),
+--- 67,78 ----
+      Vcs(_cfg.get_d("vcs")),
+      Vcb(_cfg.get_d("vcb")),
+      Vub(_cfg.get_d("vub")),
+!     CutMinCthPos(_cfg.get_d("costhcut_pos_min")),
+!     CutMaxCthPos(_cfg.get_d("costhcut_pos_max")),
+!     CutMinCthNeg(_cfg.get_d("costhcut_neg_min")),
+!     CutMaxCthNeg(_cfg.get_d("costhcut_neg_max")),
+!     CutMinThNeg(_cfg.get_d("thcut_neg_min")),
+!     CutMaxThNeg(_cfg.get_d("thcut_neg_max")),
+      CutMinTheta(_cfg.get_d("thetacut")),
+      CutMaxTheta(180.-_cfg.get_d("thetacut")),
+      // CutMinM34(0.),
+diff -crb ReneSANCe-1.3.4_org/Generator/src/Process.cpp ReneSANCe-1.3.4/Generator/src/Process.cpp
+*** ReneSANCe-1.3.4_org/Generator/src/Process.cpp	2023-11-29 04:46:38.000000000 -0800
+--- ReneSANCe-1.3.4/Generator/src/Process.cpp	2023-12-18 13:25:40.000000000 -0800
+***************
+*** 69,90 ****
+    //--------------------------------------------------------------------------------------------------
+    // if ((abs(Cth13) > 1.0 - 1.e-7) || (abs(Cth14) > 1.0 - 1.e-7))
+    // return false;
+!   if (Cth13 < info.CutMinCth)
+      return false;
+!   if (Cth13 > info.CutMaxCth)
+      return false;
+!   if (Cth14 < info.CutMinCth)
+      return false;
+!   if (Cth14 > info.CutMaxCth)
+      return false;
+!   if (Theta13 < info.CutMinTheta)
+      return false;
+!   if (Theta13 > info.CutMaxTheta)
+      return false;
+    if (Theta14 < info.CutMinTheta)
+      return false;
+    if (Theta14 > info.CutMaxTheta)
+      return false;
+    if (info.pt3cut) {
+      if (Pt3 < info.pt3min)
+        return false;
+--- 68,97 ----
+    //--------------------------------------------------------------------------------------------------
+    // if ((abs(Cth13) > 1.0 - 1.e-7) || (abs(Cth14) > 1.0 - 1.e-7))
+    // return false;
+!   if (Cth13 < info.CutMinCthNeg)
+      return false;
+!   if (Cth13 > info.CutMaxCthNeg)
+      return false;
+!   if (Cth14 < info.CutMinCthPos)
+      return false;
+!   if (Cth14 > info.CutMaxCthPos)
+      return false;
+!   if (Theta13 < info.CutMinThNeg)
+      return false;
+!   if (Theta13 > info.CutMaxThNeg)
+      return false;
++  // if (Theta13 < info.CutMinTheta)
++  //   return false;
++  // if (Theta13 > info.CutMaxTheta)
++  //   return false;
+    if (Theta14 < info.CutMinTheta)
+      return false;
+    if (Theta14 > info.CutMaxTheta)
+      return false;
++ //  if (Theta14 < 20)
++ //    return false;
++ //  if (Theta14 > 160)
++ //    return false;
+    if (info.pt3cut) {
+      if (Pt3 < info.pt3min)
+        return false;
