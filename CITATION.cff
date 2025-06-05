@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Miller
+    given-names: Caleb
+    orcid: https://orcid.org/0000-0003-2631-1790
+title: "ReneSANCe 10.58GeV Control Scripts"
+version: 1.0
+date-released: 2025-01-10
