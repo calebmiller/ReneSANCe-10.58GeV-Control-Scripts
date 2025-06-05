@@ -7,3 +7,5 @@ authors:
 title: "ReneSANCe 10.58GeV Control Scripts"
 version: 1.0
 date-released: 2025-01-10
+repository-code: >-
+  https://github.com/calebmiller/ReneSANCe-10.58GeV-Control-Scripts
